@@ -1,0 +1,141 @@
+name: Streamlit Smoke Tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  smoke-tests:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Verify imports
+        run: |
+          python -c "
+          import sys
+          print('Testing imports...')
+          
+          # Test core imports
+          from deep_research import DeepResearch, DeepResearchManager, Config
+          print('✅ Core imports successful')
+          
+          # Test utils imports
+          from utils.session_manager import initialize_session_state, ResearchSession
+          from utils.config_builder import build_config_from_session
+          from utils.researcher import ResearchRunner
+          from utils.ui_components import render_research_form
+          from utils.secret_masker import SecretMasker, mask_secrets
+          print('✅ Utils imports successful')
+          
+          # Test app import
+          import app
+          print('✅ App import successful')
+          
+          print('\\n✅ All imports passed!')
+          "
+      
+      - name: Run syntax checks
+        run: |
+          echo "Checking Python syntax..."
+          python -m py_compile app.py
+          python -m py_compile utils/*.py
+          python -m py_compile deep_research/*.py
+          echo "✅ All files compile successfully"
+      
+      - name: Test secret masking
+        run: |
+          python -c "
+          from utils.secret_masker import mask_secrets, SecretMasker
+          
+          # Test API key masking
+          test_key = 'sk-1234567890abcdefghijklmnopqrstuvwxyz'
+          masked = mask_secrets(test_key)
+          assert 'MASKED' in masked or '***' in masked, f'Secret not masked: {masked}'
+          assert test_key not in masked, 'Original secret found in masked output'
+          print('✅ Secret masking works correctly')
+          
+          # Test dict masking
+          test_dict = {'openai_api_key': 'sk-test123', 'other_data': 'safe'}
+          masked_dict = mask_secrets(test_dict)
+          assert 'MASKED' in str(masked_dict['openai_api_key']), 'Dict key not masked'
+          assert masked_dict['other_data'] == 'safe', 'Non-secret data was modified'
+          print('✅ Dict masking works correctly')
+          "
+      
+      - name: Test configuration validation
+        run: |
+          python -c "
+          from deep_research import Config
+          from utils.config_builder import validate_config
+          
+          # Test config creation (without API keys for CI)
+          config = Config(
+              openai_api_key=None,
+              anthropic_api_key=None
+          )
+          
+          is_valid, errors = validate_config(config)
+          # Should fail validation (no API keys) but not crash
+          assert isinstance(is_valid, bool)
+          assert isinstance(errors, list)
+          print('✅ Configuration validation works')
+          "
+      
+      - name: Test session manager
+        run: |
+          python -c "
+          from utils.session_manager import ResearchSession, generate_research_id
+          from datetime import datetime
+          
+          # Test session creation
+          session = ResearchSession(
+              id=generate_research_id(),
+              topic='Test topic',
+              created_at=datetime.now()
+          )
+          
+          assert session.id is not None
+          assert session.topic == 'Test topic'
+          print('✅ Session manager works correctly')
+          "
+      
+      - name: Check for potential secret leaks
+        run: |
+          echo "Scanning for potential secret leaks..."
+          # Check for hardcoded API keys (basic check)
+          if grep -r "sk-[a-zA-Z0-9]\{32,\}" --include="*.py" --exclude-dir=".git" . 2>/dev/null | grep -v "MASKED" | grep -v "test"; then
+            echo "⚠️  Warning: Potential hardcoded API keys found"
+            exit 1
+          fi
+          echo "✅ No obvious hardcoded secrets found"
+      
+      - name: Lint check (optional)
+        run: |
+          echo "Running basic lint checks..."
+          # Check for common issues
+          python -m py_compile app.py utils/*.py deep_research/*.py 2>&1 || exit 1
+          echo "✅ Lint checks passed"
