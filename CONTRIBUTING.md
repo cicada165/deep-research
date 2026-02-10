@@ -321,6 +321,7 @@ fix stuff
 
 - API keys or secrets
 - `.env` files
+- `.env.github` files
 - `.streamlit/secrets.toml` (if it contains keys)
 - Hardcoded credentials
 
