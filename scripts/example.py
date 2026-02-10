@@ -2,6 +2,10 @@
 Example usage of Deep Research system
 """
 
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from deep_research import DeepResearch, DeepResearchManager
 
 def example_manager():
