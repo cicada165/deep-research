@@ -209,7 +209,11 @@ comments should be added."""
             import requests
             from bs4 import BeautifulSoup
             
-            self.ddgs = DDGS()
+            # Suppress "duckduckgo_search has been renamed to ddgs" warning
+            import warnings
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=RuntimeWarning, message=".*duckduckgo_search.*renamed.*")
+                self.ddgs = DDGS()
             self.requests = requests
             self.BeautifulSoup = BeautifulSoup
             self.llm = self._initialize_summarization_llm()
