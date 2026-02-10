@@ -7,7 +7,16 @@ from typing import Optional
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
-load_dotenv()
+try:
+    load_dotenv()
+except Exception:
+    pass
+
+# Try loading from .env.github if available (fallback for permission issues)
+try:
+    load_dotenv(".env.github")
+except Exception:
+    pass
 
 
 class Config(BaseSettings):
@@ -15,6 +24,7 @@ class Config(BaseSettings):
     
     # API Keys
     openai_api_key: Optional[str] = os.getenv("OPENAI_API_KEY")
+    openai_base_url: Optional[str] = os.getenv("OPENAI_BASE_URL")
     anthropic_api_key: Optional[str] = os.getenv("ANTHROPIC_API_KEY")
     deepseek_api_key: Optional[str] = os.getenv("DEEPSEEK_API_KEY")
     deepseek_base_url: str = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1")
@@ -48,5 +58,6 @@ class Config(BaseSettings):
     fact_checker_temperature: float = float(os.getenv("FACT_CHECKER_TEMPERATURE", "0.3"))
     
     class Config:
-        env_file = ".env"
+        env_file = ".env.github"
+        extra = "ignore"
         case_sensitive = False

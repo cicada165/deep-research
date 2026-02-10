@@ -79,7 +79,8 @@ class SynthesizeAgent:
             return ChatOpenAI(
                 model=self.config.synthesizer_model,
                 temperature=self.config.synthesizer_temperature,
-                api_key=self.config.openai_api_key
+                api_key=self.config.openai_api_key,
+                base_url=self.config.openai_base_url
             )
     
     def _initialize_agent(self):

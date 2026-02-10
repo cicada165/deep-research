@@ -244,7 +244,8 @@ comments should be added."""
             return ChatOpenAI(
                 model=self.config.executor_model,
                 temperature=self.config.executor_temperature,
-                api_key=self.config.openai_api_key
+                api_key=self.config.openai_api_key,
+                base_url=self.config.openai_base_url
             )
     
     def execute_search(self, query: str) -> str:

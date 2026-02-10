@@ -58,3 +58,4 @@ outputs/
 # CI/CD
 .github/workflows/*.log
 .env
+.env.github

@@ -60,7 +60,8 @@ class PlannerAgent:
             return ChatOpenAI(
                 model=self.config.planner_model,
                 temperature=self.config.planner_temperature,
-                api_key=self.config.openai_api_key
+                api_key=self.config.openai_api_key,
+                base_url=self.config.openai_base_url
             )
     
     def create_research_plan(self, research_topic: str) -> WebSearchPlan:

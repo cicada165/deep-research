@@ -58,7 +58,8 @@ class FactCheckerAgent:
             self.llm = ChatOpenAI(
                 model=config.fact_checker_model,
                 temperature=config.fact_checker_temperature,
-                api_key=config.openai_api_key
+                api_key=config.openai_api_key,
+                base_url=config.openai_base_url
             )
         elif config.anthropic_api_key:
             self.llm = ChatAnthropic(
