@@ -169,6 +169,9 @@ Create a `.env` file in the project root:
 OPENAI_API_KEY=your_openai_key_here
 ANTHROPIC_API_KEY=your_anthropic_key_here
 
+# Optional: Custom OpenAI Base URL (e.g., for GitHub Models or Azure)
+OPENAI_BASE_URL=https://models.inference.ai.azure.com
+
 # Optional: For specific search methods
 QWEN_API_KEY=your_qwen_key_here          # For Qwen with built-in search
 TAVILY_API_KEY=your_tavily_key_here       # For Tavily search
