@@ -59,3 +59,4 @@ outputs/
 .github/workflows/*.log
 .env
 .env.github
+node_modules
